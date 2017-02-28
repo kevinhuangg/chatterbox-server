@@ -19,6 +19,8 @@ var defaultCorsHeaders = {
   'access-control-max-age': 10 // Seconds.
 };
 
+var results = []; //storage array for passed in data
+
 var requestHandler = function(request, response) {
 
   //if request.method is equal to 'GET' and request.url is equal to '/classes/messages'
@@ -48,34 +50,44 @@ var requestHandler = function(request, response) {
       response.end();
     });
 
-    // request.on('data', function(data) {
-    //   results.push(data);
-    // });
-
     request.on('end', function() {
-      // results = Buffer.concat(results).toString();
-      // console.log(results);
-
+      response.statusCode = statusCode;
       response.writeHead(statusCode, headers);
 
-      var responseObj = {
+      var responseBody = {
         method: request.method,
         // ended: true,
         url: request.url,
         headers: headers,
         responseCode: statusCode,
-        results: []
+        results: results
       };
-      // console.log(JSON.stringify(responseObj));
 
-      // response.write(JSON.stringify(responseObj));
-      // console.log(response);
-      //return response object
-      response.end(JSON.stringify(responseObj));
+      console.log(results);
+
+      response.end(JSON.stringify(responseBody));
 
     });
-
   } 
+
+  if (request.method === 'POST' && request.url === '/classes/messages') {
+    statusCode = 201;
+    response.writeHead(statusCode, headers);    
+    
+    request.on('error', function(err) {
+      console.error('something wrong happened');
+      response.end();
+    });
+    request.on('data', function(chunk) {
+      console.log(chunk.toString());
+      results.push(chunk.toString());
+    });      
+    request.on('end', function() {
+
+      response.end();
+    });
+  }
+
 
   // Make sure to always call response.end() - Node may not send
   // anything back to the client until you do. The string you pass to
