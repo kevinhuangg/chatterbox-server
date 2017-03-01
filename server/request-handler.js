@@ -11,6 +11,9 @@ this file and include it in basic-server.js so that it actually works.
 *Hint* Check out the node module documentation at http://nodejs.org/api/modules.html.
 
 **************************************************************/
+
+var results = []; //storage array for passed in data
+
 var defaultCorsHeaders = {
   'access-control-allow-origin': '*',
   'access-control-allow-methods': 'GET, POST, PUT, DELETE, OPTIONS',
@@ -19,13 +22,11 @@ var defaultCorsHeaders = {
   'Content-Type': 'application/json'
 };
 
-var results = []; //storage array for passed in data
-var responseBody = {};
 
 var requestHandler = function(request, response) {
 
-
-  //if request.method is equal to 'GET' and request.url is equal to '/classes/messages'
+  var responseBody = {};
+  // console.log(request.url);
 
   console.log('Serving request type ' + request.method + ' for url ' + request.url);
 
@@ -36,24 +37,20 @@ var requestHandler = function(request, response) {
   var headers = defaultCorsHeaders;
   // console.log(headers);
 
+  if (request.url !== '/classes/messages') {
+    statusCode = 404;
+  }
+  
   request.on('error', function(err) {
     console.error('something wrong happened');
-    response.statusCode = 404;
-    response.end();
+    statusCode = 404;
   });
   request.on('data', function(chunk) { //ask why chaining fails our tests
-    console.log(chunk);
+    // console.log(chunk);
     if (chunk) {
-      results.push(chunk.toString());
+      results.push(chunk.toString);
     }
   });      
-  // request.on('end', function() { //ask what the fuck this does
-
-  //   response.end();
-  // });
-
-  // .writeHead() writes to the request line and headers of the response,
-  // which includes the status and all headers.
   
   //{'Content-Type': 'application/json'}
 
@@ -68,15 +65,15 @@ var requestHandler = function(request, response) {
       responseCode: statusCode,
       results: results
     };
-    // console.log(responseBody.results);
-    // response.end(JSON.stringify(responseBody));
-    
+
+
+
   } else if (request.method === 'POST') {
     statusCode = 201;
     response.writeHead(statusCode, headers);    
     
   }
-
+  console.log(responseBody.results);
   response.end(JSON.stringify(responseBody));
   // Make sure to always call response.end() - Node may not send
   // anything back to the client until you do. The string you pass to
